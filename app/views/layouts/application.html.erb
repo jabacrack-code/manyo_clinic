@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>CdpWebManyoTask</title>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= stylesheet_link_tag 'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_pack_tag 'application', 'data-turbolinks-track': 'reload' %>
+  </head>
+
+  <body>
+    <nav>
+      <%= link_to 'Tasks Index', tasks_path, id: 'tasks-index' %>
+      <%= link_to 'New Task', new_task_path, id: 'new-task' %>
+    </nav>
+    <% if notice %>
+      <p id="notice"><%= notice %></p>
+    <% end %>
+    <%= yield %>
+  </body>
+</html>

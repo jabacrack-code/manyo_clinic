@@ -1,0 +1,13 @@
+.git
+.gitignore
+.rspec
+.ruby-version
+bin/render-build.sh
+config/master.key
+config/credentials.yml.enc
+log
+storage
+tmp
+coverage
+public/assets
+node_modules

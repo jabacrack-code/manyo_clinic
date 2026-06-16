@@ -1,0 +1,19 @@
+<h1>Show Task Page</h1>
+
+<p>
+  <strong>Title</strong><br>
+  <%= @task.title %>
+</p>
+
+<p>
+  <strong>Content</strong><br>
+  <%= @task.content %>
+</p>
+
+<p>
+  <strong>Created_at</strong><br>
+  <%= @task.created_at %>
+</p>
+
+<%= link_to 'Edit', edit_task_path(@task), id: 'edit-task' %>
+<%= link_to 'Back', tasks_path, id: 'back' %>
