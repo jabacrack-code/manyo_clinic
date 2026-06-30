@@ -29,7 +29,7 @@ RSpec.describe 'Task management function', type: :system do
         expect(page).to have_content 'third_task'
       end
 
-      it 'orders tasks by creation date, newest first' do
+      it '作成済みのタスク一覧が作成日時の降順で表示される' do
         task_list = all('tbody tr')
         expect(task_list[0]).to have_content 'first_task'
         expect(task_list[1]).to have_content 'second_task'
@@ -37,8 +37,8 @@ RSpec.describe 'Task management function', type: :system do
       end
     end
 
-    context 'when a new task is created' do
-      it 'appears at the top of the list' do
+    context '新たにタスクを作成した場合' do
+      it '新しいタスクが一番上に表示される' do
         visit new_task_path
         fill_in 'タイトル', with: 'newly_created_task'
         fill_in '内容', with: 'My test content.'

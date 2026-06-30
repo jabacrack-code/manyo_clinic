@@ -11,6 +11,7 @@ module CdpWebManyoTask
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 6.0
 
+
     # Time zone configuration
     config.time_zone = 'Asia/Tokyo'
     config.active_record.default_timezone = :local
