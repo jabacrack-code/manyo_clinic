@@ -5,7 +5,7 @@ RSpec.describe 'Task management function', type: :system do
     context 'When registering a task' do
       it 'The registered task is displayed' do
         visit new_task_path
-        fill_in 'Title Title', with: 'Document preparation'
+        fill_in 'Title', with: 'Document preparation'
         fill_in 'Content', with: 'Create a proposal.'
         click_button 'Create Task'
         expect(page).to have_content 'Task was successfully created.'
