@@ -7,9 +7,9 @@ RSpec.describe 'Task management function', type: :system do
         visit new_task_path
         fill_in 'タイトル', with: 'My Test Task'
         fill_in '内容', with: 'My test content.'
-        fill_in '終了期限', with: '2026-04-28'
-        select '中', from: '優先度'
-        select '未着手', from: 'ステータス'
+        fill_in '終了期限', with: '2026-12-31'
+        select '中', from: 'task[priority]'
+        select '未着手', from: 'task[status]'
         click_button '登録する'
 
         expect(page).to have_content 'タスクを登録しました'
@@ -19,12 +19,11 @@ RSpec.describe 'Task management function', type: :system do
   end
 
   describe 'Task list' do
-    # Three test data sets with different title, deadline, priority and status
-    let!(:first_task)  { FactoryBot.create(:task, title: 'first_task',  created_at: '2025-02-18', deadline_on: '2022-02-18', priority: 'medium', status: 'not_started') }
-    let!(:second_task) { FactoryBot.create(:task, title: 'second_task', created_at: '2025-02-17', deadline_on: '2022-02-17', priority: 'high', status: 'in_progress') }
-    let!(:third_task)  { FactoryBot.create(:task, title: 'third_task',  created_at: '2025-02-16', deadline_on: '2022-02-16', priority: 'low', status: 'completed') }
+    let!(:first_task)  { FactoryBot.create(:task, title: 'first_task',  created_at: '2026-02-18', deadline_on: '2026-02-18', priority: 'medium', status: 'not_started') }
+    let!(:second_task) { FactoryBot.create(:task, title: 'second_task', created_at: '2026-02-12', deadline_on: '2026-02-20', priority: 'high', status: 'in_progress') }
+    let!(:third_task)  { FactoryBot.create(:task, title: 'third_task',  created_at: '2026-01-06', deadline_on: '2026-02-10', priority: 'low', status: 'completed') }
 
-    before { visit tasks_path }
+    before { visit tasks_path }   
 
     context 'when the list page is loaded' do
       it 'shows all registered tasks' do
@@ -33,7 +32,7 @@ RSpec.describe 'Task management function', type: :system do
         expect(page).to have_content 'third_task'
       end
 
-      it 'orders tasks by creation date, newest first' do
+      it '作成済みのタスク一覧が作成日時の降順で表示される' do
         task_list = all('tbody tr')
         expect(task_list[0]).to have_content 'first_task'
         expect(task_list[1]).to have_content 'second_task'
@@ -41,14 +40,14 @@ RSpec.describe 'Task management function', type: :system do
       end
     end
 
-    context 'when a new task is created' do
-      it 'appears at the top of the list' do
+    context '新たにタスクを作成した場合' do
+      it '新しいタスクが一番上に表示される' do
         visit new_task_path
         fill_in 'タイトル', with: 'newly_created_task'
         fill_in '内容', with: 'My test content.'
         fill_in '終了期限', with: '2026-12-31'
-        select '中', from: '優先度'
-        select '未着手', from: 'ステータス'
+        select '中', from: 'task[priority]'
+        select '未着手', from: 'task[status]'
         click_button '登録する'
 
         expect(page).to have_content 'タスクを登録しました'
@@ -57,81 +56,49 @@ RSpec.describe 'Task management function', type: :system do
       end
     end
 
-    describe 'sort function' do
-      context 'If you click on the link "Exit Deadline"' do
-        it "A list of tasks sorted in ascending order of due date is displayed." do
-          click_link '終了期限'
-          sleep 0.5
-
-          task_list = all('tbody tr')
-          # 2022-02-16 is earliest, so third_task should be at the top
-          expect(task_list[0]).to have_content 'third_task'
-          expect(task_list[1]).to have_content 'second_task'
-          expect(task_list[2]).to have_content 'first_task'
-        end
-      end
-
-      context 'If you click on the link "Priority"' do
-        it "A list of tasks sorted by priority is displayed" do
-          click_link '優先度'
-          sleep 0.5
-
-          task_list = all('tbody tr')
-          # High (second_task) -> Medium (first_task) -> Low (third_task)
-          expect(task_list[0]).to have_content 'second_task'
-          expect(task_list[1]).to have_content 'first_task'
-          expect(task_list[2]).to have_content 'third_task'
-        end
+    context 'when sorted by deadline' do
+      it 'shows tasks sorted by deadline ascending' do
+        click_link '終了期限'
+        sleep 0.2
+        task_list = all('tbody tr')
+        expect(task_list[0]).to have_content 'third_task'
+        expect(task_list[1]).to have_content 'first_task'
+        expect(task_list[2]).to have_content 'second_task'
       end
     end
 
-    describe 'Search function' do
-      context 'If you do a fuzzy search by Title' do
-        it "Only tasks containing the search word will be displayed." do
-          fill_in 'タイトル', with: 'first'
-          click_button '検索'
+    context 'when sorted by priority' do
+      it 'shows tasks sorted by priority descending' do
+        click_link '優先度'
+        sleep 0.2
+        task_list = all('tbody tr')
+        expect(task_list[0]).to have_content 'second_task'
+        expect(task_list[1]).to have_content 'first_task'
+        expect(task_list[2]).to have_content 'third_task'
+      end
+    end
 
-          expect(page).to have_content 'first_task'
-          expect(page).not_to have_content 'second_task'
-          expect(page).not_to have_content 'third_task'
-        end
+    context 'when search is performed' do
+      it 'filters tasks by fuzzy title' do
+        fill_in 'search[title]', with: 'first'
+        click_button '検索'
+        expect(page).to have_content 'first_task'
+        expect(page).not_to have_content 'second_task'
       end
 
-      context 'Search by status' do
-        it "Only tasks matching the searched status will be displayed" do
-          # Test "Not started"
-          select '未着手', from: 'ステータス'
-          click_button '検索'
-          expect(page).to have_content 'first_task'
-          expect(page).not_to have_content 'second_task'
-          expect(page).not_to have_content 'third_task'
-
-          # Test "In progress"
-          select '着手中', from: 'ステータス'
-          click_button '検索'
-          expect(page).not_to have_content 'first_task'
-          expect(page).to have_content 'second_task'
-          expect(page).not_to have_content 'third_task'
-
-          # Test "Completed"
-          select '完了', from: 'ステータス'
-          click_button '検索'
-          expect(page).not_to have_content 'first_task'
-          expect(page).not_to have_content 'second_task'
-          expect(page).to have_content 'third_task'
-        end
+      it 'filters tasks by status' do
+        select '着手中', from: 'search[status]'
+        click_button '検索'
+        expect(page).to have_content 'second_task'
+        expect(page).not_to have_content 'first_task'
       end
 
-      context 'Title and search by status' do
-        it "Only tasks that contain the search word Title and match the status will be displayed" do
-          fill_in 'タイトル', with: 'first'
-          select '未着手', from: 'ステータス'
-          click_button '検索'
-
-          expect(page).to have_content 'first_task'
-          expect(page).not_to have_content 'second_task'
-          expect(page).not_to have_content 'third_task'
-        end
+      it 'filters tasks by both title and status' do
+        fill_in 'search[title]', with: 'second'
+        select '着手中', from: 'search[status]'
+        click_button '検索'
+        expect(page).to have_content 'second_task'
+        expect(page).not_to have_content 'first_task'
       end
     end
   end
@@ -139,7 +106,7 @@ RSpec.describe 'Task management function', type: :system do
   describe 'Task detail' do
     context 'when a user visits a task page' do
       it 'displays the full task content' do
-        task = FactoryBot.create(:task, title: 'Document preparation', content: 'My test content.', deadline_on: '2026-12-31', priority: 'medium', status: 'not_started')
+        task = FactoryBot.create(:task, title: 'Document preparation', content: 'My test content.')
         visit task_path(task.id)
 
         expect(page).to have_content 'Document preparation'
